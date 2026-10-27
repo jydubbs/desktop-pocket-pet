@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Pocket Pet says</title>
+<style>
+  :root { --paper: #ffffff; --ink: #2f2843; --muted: #6f6886; --edge: #eadff4; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #2c2740; --ink: #f2eefa; --muted: #b7afcc; --edge: #433b5c; color-scheme: dark; }
+  }
+  html, body { margin: 0; background: transparent; overflow: hidden;
+    font: 14px/1.4 ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; }
+  #wrap { padding: 4px 8px 16px; }
+  #wrap.up { padding: 16px 8px 4px; }
+  .bubble { position: relative; background: var(--paper); color: var(--ink); border: 1.5px solid var(--edge);
+    border-radius: 18px; padding: 10px 14px; box-shadow: 0 4px 14px rgba(50, 30, 80, .18);
+    opacity: 0; transform: translateY(6px) scale(.96); transition: opacity .25s ease, transform .25s ease; }
+  .show .bubble { opacity: 1; transform: none; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -9px; width: 16px; height: 16px;
+    background: var(--paper); border-right: 1.5px solid var(--edge); border-bottom: 1.5px solid var(--edge);
+    transform: translateX(-50%) rotate(45deg); border-bottom-right-radius: 4px; }
+  .up .bubble::after { bottom: auto; top: -9px; transform: translateX(-50%) rotate(225deg); }
+  #title { font-weight: 800; margin: 0; }
+  #title:empty { display: none; }
+  #body { margin: 0; color: var(--ink); }
+  #title:not(:empty) + #body { color: var(--muted); margin-top: 2px; }
+  @media (prefers-reduced-motion: reduce) { .bubble { transition: none; transform: none; } }
+</style>
+</head>
+<body>
+<div id="wrap"><div class="bubble"><p id="title"></p><p id="body"></p></div></div>
+<script src="bubble.js"></script>
+</body>
+</html>

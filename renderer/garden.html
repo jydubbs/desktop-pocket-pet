@@ -1,0 +1,277 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Pocket Pet Hangout</title>
+<style>
+  /* Three hangouts share one layout: a backdrop band at the top, then a floor of seats, one per graduate.
+     The theme is set on <body data-theme="cafe|picnic|space">; light mode is daytime, dark mode is evening. */
+  :root {
+    --card: #fffaf4; --ink: #3a2c26; --muted: #8a7466; --line: #eadccd; --soft: #f7ede2;
+    --accent: #c9606f; --accent-ink: #fff; --tag: rgba(58, 38, 30, .82);
+    /* café */
+    --wall: #f6e6d4; --wall-stripe: #f1dcc6; --wainscot: #d9b48f; --wainscot-edge: #c69d76;
+    --floor-a: #c98f5f; --floor-b: #bd8455;
+    --sky-a: #bfe2ff; --sky-b: #e9f6ff; --frame: #fff8ef; --lamp: #ffd88a; --lamp-glow: rgba(255, 216, 138, 0);
+    --board: #3c4a42; --chalk: #f5f1e8; --table: #fffaf3; --table-edge: #e7d8c6; --table-leg: #8a5a3b;
+    /* picnic */
+    --p-sky-a: #a9dcff; --p-sky-b: #fdf6e8; --p-hill-back: #b8e3a6; --p-hill-front: #9fd38c; --p-grass-a: #95cf7e; --p-grass-b: #86c26f;
+    --p-trunk: #9a6a44; --p-leaves: #7cbf6a; --p-leaves-2: #6aae5a; --p-sun: #ffd86b; --firefly: rgba(255, 238, 140, 0);
+    /* space */
+    --s-sky-a: #3b2f75; --s-sky-b: #6b4fa8; --s-floor-a: #2d2560; --s-floor-b: #3a2e70; --s-star: #fff7d6; --s-planet: #f5a3c7; --s-moon: #f4efe1;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --card: #2e2523; --ink: #f6ece2; --muted: #c4ae9e; --line: #4a3a34; --soft: #3a2f2c;
+      --accent: #ef8a98; --accent-ink: #2a1a1c; --tag: rgba(20, 12, 10, .8);
+      --wall: #4a3530; --wall-stripe: #45322d; --wainscot: #6b4a37; --wainscot-edge: #5a3d2d;
+      --floor-a: #5b3a28; --floor-b: #533524;
+      --sky-a: #1b2147; --sky-b: #2d2a55; --frame: #e9d9c4; --lamp: #ffd27a; --lamp-glow: rgba(255, 196, 102, .28);
+      --board: #2a332e; --table: #f3e6d6; --table-edge: #cdb8a1; --table-leg: #3b2618;
+      --p-sky-a: #1c2450; --p-sky-b: #5a4a7a; --p-hill-back: #2f5a46; --p-hill-front: #284f3d; --p-grass-a: #24493a; --p-grass-b: #1f4033;
+      --p-trunk: #5a3e2a; --p-leaves: #2f5f45; --p-leaves-2: #285240; --p-sun: #f4efe1; --firefly: rgba(255, 238, 140, .9);
+      --s-sky-a: #0f0c2e; --s-sky-b: #2a1f5c; --s-floor-a: #120f35; --s-floor-b: #17133f;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font: 14px/1.45 ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; color: var(--ink);
+    background: var(--floor-a); overflow: hidden; -webkit-user-select: none; user-select: none; }
+  body[data-theme="picnic"] { background: var(--p-grass-b); }
+  body[data-theme="space"] { background: var(--s-floor-b); }
+
+  header { position: absolute; top: 0; left: 0; right: 0; height: 48px; padding: 10px 16px 0 84px; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; -webkit-app-region: drag; z-index: 40; }
+  header .left { display: flex; align-items: baseline; min-width: 0; }
+  h1 { margin: 0; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  body[data-theme="space"] h1, body[data-theme="space"] .count { color: #fff; }
+  .count { color: var(--muted); font-weight: 600; font-size: 13px; margin-left: 6px; white-space: nowrap; }
+  .themes { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 2px;
+    -webkit-app-region: no-drag; box-shadow: 0 2px 8px rgba(0, 0, 0, .12); flex: none; }
+  .themes button { border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 700; font-size: 12.5px;
+    padding: 5px 12px; border-radius: 9px; cursor: pointer; }
+  .themes button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .banner { position: absolute; top: 54px; right: 16px; z-index: 40; font-size: 12px; font-weight: 700; background: var(--ink); color: var(--card);
+    padding: 4px 12px; border-radius: 99px; }
+
+  .room { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; }
+  .backdrop { position: relative; height: 270px; display: none; overflow: hidden; }
+  body[data-theme="cafe"] .backdrop.cafe, body[data-theme="picnic"] .backdrop.picnic, body[data-theme="space"] .backdrop.space { display: block; }
+
+  /* --- café --- */
+  .backdrop.cafe { background: repeating-linear-gradient(90deg, var(--wall) 0 34px, var(--wall-stripe) 34px 68px); }
+  .wainscot { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; background: var(--wainscot); border-top: 6px solid var(--wainscot-edge);
+    background-image: repeating-linear-gradient(90deg, transparent 0 58px, var(--wainscot-edge) 58px 61px); }
+  .window { position: absolute; top: 72px; width: 120px; height: 104px; border-radius: 60px 60px 8px 8px; border: 7px solid var(--frame);
+    background: linear-gradient(var(--sky-a), var(--sky-b)); overflow: hidden; }
+  .window::before, .window::after { content: ""; position: absolute; background: var(--frame); }
+  .window::before { left: 50%; top: 0; bottom: 0; width: 5px; transform: translateX(-50%); }
+  .window::after { top: 52%; left: 0; right: 0; height: 5px; }
+  .window .cloud { position: absolute; width: 46px; height: 16px; border-radius: 99px; background: #fff; opacity: .85; top: 30px; left: 10px; }
+  .window .wstar { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; opacity: 0; }
+  @media (prefers-color-scheme: dark) { .window .cloud { opacity: 0; } .window .wstar { opacity: .9; } }
+  .lamp { position: absolute; top: 0; width: 2px; height: 46px; background: var(--wainscot-edge); }
+  .lamp::after { content: ""; position: absolute; top: 44px; left: 50%; width: 36px; height: 20px; transform: translateX(-50%);
+    background: var(--lamp); border-radius: 18px 18px 4px 4px; box-shadow: 0 14px 40px 18px var(--lamp-glow); }
+  .board { position: absolute; top: 54px; width: 170px; padding: 8px 14px 10px; border-radius: 8px; background: var(--board);
+    border: 6px solid #8a5a3b; color: var(--chalk); font-size: 12px; line-height: 1.45; z-index: 2; }
+  .board b { display: block; text-align: center; font-size: 13px; letter-spacing: .08em; margin-bottom: 2px; }
+  .board span { display: flex; justify-content: space-between; gap: 8px; opacity: .92; }
+  .plant { position: absolute; bottom: 46px; width: 34px; height: 46px; }
+
+  /* --- picnic garden --- */
+  .backdrop.picnic { background: linear-gradient(var(--p-sky-a), var(--p-sky-b) 85%); }
+  .backdrop.picnic .sun { position: absolute; top: 64px; right: 12%; width: 62px; height: 62px; border-radius: 50%; background: var(--p-sun);
+    box-shadow: 0 0 40px 10px color-mix(in srgb, var(--p-sun) 50%, transparent); }
+  .backdrop.picnic .pcloud { position: absolute; height: 22px; border-radius: 99px; background: #fff; opacity: .9; }
+  @media (prefers-color-scheme: dark) { .backdrop.picnic .pcloud { opacity: .12; } }
+  .backdrop.picnic svg.hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 150px; }
+  .backdrop.picnic svg.tree { position: absolute; left: 3%; bottom: 0; width: 170px; height: 220px; }
+  .backdrop.picnic svg.bunting { position: absolute; top: 48px; left: 0; width: 100%; height: 44px; }
+  .firefly { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--firefly); box-shadow: 0 0 8px 3px var(--firefly);
+    animation: drift 6s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translate(0, 0); opacity: .3; } to { transform: translate(20px, -16px); opacity: 1; } }
+
+  /* --- space station --- */
+  .backdrop.space { background: radial-gradient(ellipse at 70% 30%, var(--s-sky-b), var(--s-sky-a) 70%); }
+  .sstar { position: absolute; border-radius: 50%; background: var(--s-star); animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+  .backdrop.space svg.planet { position: absolute; top: 60px; right: 9%; width: 130px; height: 90px; }
+  .backdrop.space .moon { position: absolute; top: 72px; left: 7%; width: 58px; height: 58px; border-radius: 50%; background: var(--s-moon);
+    box-shadow: inset -10px -6px 0 rgba(0, 0, 0, .12), 0 0 30px rgba(255, 255, 240, .35); }
+  .backdrop.space .moon::before, .backdrop.space .moon::after { content: ""; position: absolute; border-radius: 50%; background: rgba(0, 0, 0, .08); }
+  .backdrop.space .moon::before { width: 12px; height: 12px; left: 14px; top: 14px; }
+  .backdrop.space .moon::after { width: 8px; height: 8px; left: 32px; top: 34px; }
+  .backdrop.space .station { position: absolute; top: 150px; left: 40%; width: 120px; height: 60px; animation: float 6s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+
+  /* --- floor + seats --- */
+  .floor { position: relative; min-height: calc(100% - 270px); padding: 26px max(16px, 3vw) 40px; overflow: hidden; }
+  body[data-theme="cafe"] .floor { background: repeating-linear-gradient(90deg, var(--floor-a) 0 90px, var(--floor-b) 90px 180px);
+    box-shadow: inset 0 10px 18px -10px rgba(0,0,0,.35); }
+  body[data-theme="picnic"] .floor { background:
+    radial-gradient(circle, rgba(255,255,255,.55) 0 2.5px, transparent 3.5px) 10px 18px / 70px 64px,
+    radial-gradient(circle, rgba(255,214,110,.7) 0 2.5px, transparent 3.5px) 42px 50px / 90px 80px,
+    linear-gradient(var(--p-grass-a), var(--p-grass-b)); }
+  body[data-theme="space"] .floor { background: linear-gradient(var(--s-sky-a), var(--s-floor-b)); }
+  .seats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px 10px; position: relative; }
+
+  .seat { position: relative; height: 170px; border: 0; background: transparent; padding: 0; cursor: pointer; font: inherit; color: inherit;
+    --pet-bottom: 52px; --prop-bottom: 50px; --prop-left: 24px; }
+  body[data-theme="picnic"] .seat { --pet-bottom: 26px; --prop-bottom: 20px; --prop-left: 30px; }
+  body[data-theme="space"] .seat { --pet-bottom: 42px; --prop-bottom: 74px; --prop-left: 42px; }
+  .seat:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 16px; }
+  .seat .pet { position: absolute; left: 50%; bottom: var(--pet-bottom); width: 112px; height: 104px; transform: translateX(-50%);
+    transition: transform 1.5s ease-in-out; z-index: 2; }
+  .seat .pet svg { width: 112px; height: 104px; overflow: visible; display: block; }
+  .seat .pet .body { transform-box: view-box; transform-origin: 80px 141px; animation: sway 4s ease-in-out infinite; animation-delay: var(--delay); }
+  .seat .pet .shadow { display: none; }
+  .seat .pet .wave { transform-box: view-box; transform-origin: 132px 108px; animation: wave 5s ease-in-out infinite; animation-delay: var(--delay); }
+  @keyframes sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg) translateY(-2px); } }
+  @keyframes wave { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-18deg); } 90% { transform: rotate(-6deg); } }
+  .seat .spot { position: absolute; left: 50%; bottom: 14px; width: 136px; height: 64px; transform: translateX(-50%); z-index: 0; }
+  .seat .spot.front { z-index: 3; } /* café tables sit in front of every pet; blankets and planets sit under them */
+  /* a pet that's walking around goes behind seated pets, tables and treats, never in front of them */
+  .seat .pet.out { z-index: 1; }
+  .seat .prop { position: absolute; left: calc(50% + var(--prop-left)); bottom: var(--prop-bottom); width: 34px; height: 40px; z-index: 4; }
+  body[data-theme="space"] .seat .spot, body[data-theme="space"] .seat .prop, body[data-theme="space"] .seat .pet {
+    animation: float 5s ease-in-out infinite; animation-delay: var(--delay); }
+  .steam { animation: steam 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom; }
+  .steam.two { animation-delay: 1.1s; }
+  @keyframes steam { 0% { opacity: 0; transform: translateY(4px) scaleY(.8); } 40% { opacity: .7; } 100% { opacity: 0; transform: translateY(-8px) scaleY(1.1); } }
+  .fizz { animation: fizz 1.8s ease-in infinite; }
+  .fizz:nth-of-type(2) { animation-delay: .6s; } .fizz:nth-of-type(3) { animation-delay: 1.2s; }
+  @keyframes fizz { from { transform: translateY(0); opacity: .9; } to { transform: translateY(-14px); opacity: 0; } }
+  .glow { animation: twinkle 2s ease-in-out infinite; }
+  .seat .tag { position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); background: var(--tag); color: #fff;
+    font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 99px; white-space: nowrap; z-index: 5; }
+  .seat .tag.shiny { background: linear-gradient(90deg, #c08a1e, #f4c94a, #c08a1e); color: #3a2a10; }
+  .seat:hover .tag, .seat.selected .tag { background: var(--accent); color: var(--accent-ink); }
+  .seat .away { position: absolute; left: 50%; bottom: 76px; transform: translateX(-50%) rotate(-4deg); background: var(--card);
+    color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 800;
+    box-shadow: 0 3px 8px rgba(0,0,0,.15); white-space: nowrap; z-index: 6; }
+
+  /* social life: a pet walks to a friend, they chat, then it goes back to its own seat */
+  .seat .pet.walking svg { animation: hop .38s ease-in-out infinite; }
+  @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  .chat { position: absolute; z-index: 30; transform: translate(-50%, -100%); width: max-content; max-width: 180px; background: var(--card); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 14px; padding: 6px 10px; font-size: 12px; font-weight: 700; line-height: 1.3;
+    box-shadow: 0 4px 12px rgba(40, 20, 10, .18); pointer-events: none; opacity: 0; transition: opacity .25s; text-align: center; }
+  .chat.show { opacity: 1; }
+  .chat::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px; background: var(--card);
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: translateX(-50%) rotate(45deg); }
+
+  .empty { max-width: 380px; margin: 10px auto 0; text-align: center; background: var(--card); border: 1px solid var(--line);
+    border-radius: 20px; padding: 20px 22px; }
+  .empty h2 { margin: 0 0 6px; font-size: 17px; }
+  .empty p { margin: 0; color: var(--muted); }
+
+  /* detail card */
+  .detail { position: absolute; top: 56px; right: 16px; bottom: 16px; width: 272px; overflow-y: auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: 20px; padding: 16px; z-index: 50; display: flex; flex-direction: column; gap: 10px;
+    box-shadow: 0 10px 30px rgba(40, 20, 10, .25); }
+  .detail .portrait { display: flex; justify-content: center; align-items: flex-end; gap: 4px; background: var(--soft); border-radius: 14px; padding: 8px 0 4px; }
+  .detail .portrait svg.p { width: 110px; height: 104px; overflow: visible; }
+  .detail .portrait svg.d { width: 34px; height: 40px; }
+  .detail h2 { margin: 0; font-size: 18px; }
+  .rows { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; font-variant-numeric: tabular-nums; margin: 0; }
+  .rows dt { color: var(--muted); }
+  .rows dd { margin: 0; font-weight: 700; }
+  .bars { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+  .bars div { display: grid; grid-template-columns: 56px 1fr 26px; align-items: center; gap: 8px; }
+  .bars span.track { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bars span.track i { display: block; height: 100%; border-radius: 99px; }
+  .bars b { text-align: right; font-weight: 700; color: var(--muted); }
+  .row-actions { display: flex; gap: 8px; }
+  .btn { flex: 1; font: inherit; font-weight: 800; padding: 9px 12px; border-radius: 12px; cursor: pointer; border: 0; background: var(--accent); color: var(--accent-ink); }
+  .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); flex: 0 0 auto; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .hint { color: var(--muted); font-size: 12px; margin: 0; min-height: 16px; }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .seat .pet, .seat .pet .body, .seat .pet .wave, .steam, .fizz, .glow, .seat .spot, .seat .prop, .firefly, .sstar, .station { animation: none !important; transition: none !important; }
+  }
+  html[data-os="win32"] header, html[data-os="linux"] header { padding-left: 16px; }
+</style>
+</head>
+<body data-theme="cafe">
+<header>
+  <div class="left"><h1 id="placeName">Café</h1><span class="count" id="count"></span></div>
+  <div class="themes" role="group" aria-label="Choose a hangout">
+    <button type="button" data-theme="cafe" aria-pressed="true">Café</button>
+    <button type="button" data-theme="picnic" aria-pressed="false">Picnic</button>
+    <button type="button" data-theme="space" aria-pressed="false">Space</button>
+  </div>
+</header>
+<span class="banner" id="banner" hidden>Example · these pets aren't real</span>
+<div class="room" id="room">
+  <div class="backdrop cafe" aria-hidden="true">
+    <div class="lamp" style="left:22%"></div>
+    <div class="lamp" style="left:58%"></div>
+    <div class="window" style="left:max(16px, 6%)"><span class="cloud"></span>
+      <span class="wstar" style="left:20px;top:22px"></span><span class="wstar" style="left:78px;top:30px"></span><span class="wstar" style="left:44px;top:66px"></span></div>
+    <div class="window" style="left:max(150px, 30%)"><span class="cloud" style="left:52px;top:58px"></span>
+      <span class="wstar" style="left:30px;top:40px"></span><span class="wstar" style="left:86px;top:18px"></span></div>
+    <div class="board" style="right:max(16px, 5%)">
+      <b>MENU</b>
+      <span>Coffee <em>Nerdy</em></span><span>Smoothie <em>Sporty</em></span><span>Tea <em>Zen</em></span>
+      <span>Sparkling <em>Glowy</em></span><span>Cocoa <em>Classic</em></span>
+    </div>
+    <svg class="plant" style="left:46%" viewBox="0 0 34 46"><path d="M8 30h18l-3 16H11z" fill="#c8794f"/><path d="M17 30c-2-10-10-12-12-20 8 0 12 8 12 20zm0 0c1-12 6-18 13-20-1 9-7 14-13 20zm0 0V8" fill="#79b77d" stroke="#5c9a62" stroke-width="1"/></svg>
+    <div class="wainscot"></div>
+  </div>
+  <div class="backdrop picnic" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="pcloud" style="top:76px;left:30%;width:70px"></div>
+    <div class="pcloud" style="top:106px;left:54%;width:50px"></div>
+    <svg class="bunting" viewBox="0 0 800 44" preserveAspectRatio="none"><path d="M0 4 Q200 26 400 6 Q600 26 800 4" stroke="#b98a64" stroke-width="2" fill="none"/><g id="flags"></g></svg>
+    <svg class="hills" viewBox="0 0 800 150" preserveAspectRatio="none">
+      <path d="M0 60 C150 10 300 30 420 60 C560 95 680 20 800 50 L800 150 L0 150 Z" fill="var(--p-hill-back)"/>
+      <path d="M0 110 C160 70 320 90 440 104 C580 120 690 80 800 96 L800 150 L0 150 Z" fill="var(--p-grass-a)"/>
+    </svg>
+    <svg class="tree" viewBox="0 0 170 220">
+      <rect x="74" y="110" width="22" height="110" rx="8" fill="var(--p-trunk)"/>
+      <circle cx="85" cy="80" r="56" fill="var(--p-leaves)"/><circle cx="48" cy="104" r="36" fill="var(--p-leaves-2)"/><circle cx="124" cy="100" r="38" fill="var(--p-leaves-2)"/>
+      <circle cx="70" cy="62" r="6" fill="#f37a8a"/><circle cx="108" cy="78" r="6" fill="#f37a8a"/><circle cx="88" cy="104" r="6" fill="#f37a8a"/>
+    </svg>
+    <span class="firefly" style="left:38%;top:150px"></span><span class="firefly" style="left:66%;top:120px;animation-delay:-2s"></span>
+    <span class="firefly" style="left:82%;top:190px;animation-delay:-4s"></span>
+  </div>
+  <div class="backdrop space" aria-hidden="true" id="spaceBack">
+    <div class="moon"></div>
+    <svg class="planet" viewBox="0 0 130 90">
+      <path d="M8 58 Q65 18 122 32" stroke="#f9d27a" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="65" cy="45" r="30" fill="var(--s-planet)"/><path d="M40 36 Q65 28 90 38" stroke="#fff" stroke-width="3" opacity=".35" fill="none"/>
+      <path d="M36 53 Q65 66 122 32" stroke="#f9d27a" stroke-width="5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <svg class="station" viewBox="0 0 120 60"><rect x="44" y="18" width="32" height="24" rx="8" fill="#e8e6f2"/><rect x="4" y="24" width="36" height="12" rx="2" fill="#7fb2ff"/>
+      <rect x="80" y="24" width="36" height="12" rx="2" fill="#7fb2ff"/><circle cx="60" cy="30" r="6" fill="#ffd27a"/><path d="M60 18 V8" stroke="#e8e6f2" stroke-width="2"/><circle cx="60" cy="7" r="3" fill="#f47aa8"/></svg>
+  </div>
+  <div class="floor" id="floor">
+    <div class="empty" id="empty" hidden>
+      <h2 id="emptyTitle"></h2>
+      <p id="emptyText"></p>
+    </div>
+    <div class="seats" id="seats"></div>
+  </div>
+</div>
+<aside class="detail" id="detail" hidden aria-live="polite">
+  <div class="portrait" id="dArt"></div>
+  <h2 id="dName"></h2>
+  <dl class="rows" id="dRows"></dl>
+  <div class="bars" id="dBars"></div>
+  <p class="hint" id="dHint"></p>
+  <div class="row-actions">
+    <button class="btn ghost" id="dClose">Close</button>
+    <button class="btn" id="dVisit"></button>
+  </div>
+</aside>
+<script src="os.js"></script>
+<script src="pet-art.js"></script>
+<script src="garden.js"></script>
+</body>
+</html>

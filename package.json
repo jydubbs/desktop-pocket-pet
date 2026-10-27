@@ -1,0 +1,17 @@
+{
+  "name": "pocket-pet",
+  "productName": "Pocket Pet",
+  "version": "0.1.0",
+  "description": "A cute desktop pet that grows with your micro-habits.",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "package": "electron-packager . \"Pocket Pet\" --icon=assets/icon --overwrite --out=dist --ignore=^/dist --ignore=^/test"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^33.2.0"
+  }
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Graduation day</title>
+<style>
+  :root {
+    --card: #fdfbff; --ink: #2f2843; --muted: #7a7291; --line: #ece6f5; --soft: #f5f0fb;
+    --accent: #d9649a; --accent-ink: #fff; --gold: #f4c542; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --card: #262233; --ink: #f2eefa; --muted: #a9a1c0; --line: #3a3450; --soft: #2f2a40;
+      --accent: #ef8ab5; --accent-ink: #2a1a26; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: transparent; }
+  body { font: 14px/1.45 ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; color: var(--ink);
+    padding: 8px; -webkit-user-select: none; user-select: none; }
+  .card { position: relative; height: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 26px;
+    overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 22px 24px 20px; gap: 12px;
+    -webkit-app-region: drag; }
+  .card button, .card input { -webkit-app-region: no-drag; }
+  canvas { position: absolute; inset: 0; pointer-events: none; }
+  .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .preview { font-size: 12px; background: var(--ink); color: var(--card); padding: 3px 10px; border-radius: 99px; font-weight: 700; }
+  .stage { position: relative; width: 190px; height: 170px; }
+  #art svg { width: 190px; height: 170px; overflow: visible; }
+  .stage .body { transform-box: view-box; transform-origin: 80px 141px; animation: hop 1.6s ease-in-out infinite; }
+  @keyframes hop { 0%,100% { transform: scale(1.03, .97); } 40% { transform: translateY(-14px) scale(.97, 1.04); } 60% { transform: translateY(-14px); } }
+  .cap { position: absolute; left: 50%; top: 4px; width: 66px; height: 36px; transform: translateX(-44%) rotate(-10deg); }
+  h1 { margin: 0; font-size: 22px; line-height: 1.2; text-wrap: balance; }
+  .stats { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--soft); border-radius: 99px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; }
+  .chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  label { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; font-weight: 700; font-size: 13px; }
+  input { font: inherit; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--soft);
+    color: var(--ink); -webkit-user-select: text; user-select: text; }
+  .note { color: var(--muted); font-size: 12px; margin: 0; }
+  .error { color: #c94a5c; font-size: 13px; margin: 0; min-height: 18px; }
+  .actions { display: flex; gap: 8px; width: 100%; margin-top: auto; }
+  .actions button { flex: 1; font: inherit; font-weight: 800; padding: 11px 14px; border-radius: 14px; cursor: pointer; }
+  .ghost { border: 1px solid var(--line); background: transparent; color: var(--ink); }
+  .primary { border: 0; background: var(--accent); color: var(--accent-ink); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .stage .body { animation: none; } }
+</style>
+</head>
+<body>
+<div class="card">
+  <canvas id="confetti"></canvas>
+  <div class="eyebrow">Graduation day</div>
+  <div id="previewTag" class="preview" hidden>Preview · nothing will be saved</div>
+  <div class="stage">
+    <div id="art"></div>
+    <svg class="cap" viewBox="0 0 74 40" aria-hidden="true">
+      <path d="M22 18 v9 q15 8 30 0 v-9 z" fill="#3b3f6b"/>
+      <path d="M37 4 L70 16 L37 28 L4 16 Z" fill="#4a4f80"/>
+      <path d="M37 16 L62 21 L62 33" stroke="#f4c542" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="62" cy="35" r="3.5" fill="#f4c542"/>
+    </svg>
+  </div>
+
+  <section id="ask">
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+      <h1 id="title"></h1>
+      <div class="stats" id="stats"></div>
+      <div class="chips" id="chips"></div>
+      <label id="nameLabel">Its name at the café
+        <input type="text" id="name" maxlength="16" autocomplete="off">
+      </label>
+      <p class="note">Its name, look and colour will be kept just like this, forever, and it gets its own spot to hang out. Then a new egg arrives.</p>
+      <p class="error" id="error" role="alert"></p>
+    </div>
+  </section>
+
+  <section id="done" hidden>
+    <h1 id="doneTitle"></h1>
+    <p class="note" id="doneNote"></p>
+  </section>
+
+  <div class="actions" id="askActions">
+    <button class="ghost" id="notYet">Not yet</button>
+    <button class="primary" id="confirm">Send to the café</button>
+  </div>
+  <div class="actions" id="doneActions" hidden>
+    <button class="ghost" id="close">Close</button>
+    <button class="primary" id="openGarden">Visit the café</button>
+  </div>
+</div>
+<script src="pet-art.js"></script>
+<script src="ceremony.js"></script>
+</body>
+</html>

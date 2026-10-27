@@ -1,0 +1,28 @@
+// Motivation lines your pet says when it greets you.
+// Add your own! Keep each one short enough for a speech bubble.
+module.exports = [
+  'Make plans like an adult and believe in them like a child.',
+  'You got this!',
+  'Small steps still move you forward.',
+  'One tiny thing today beats a perfect plan for tomorrow.',
+  'Be gentle with yourself and keep going.',
+  "Today doesn't need to be perfect to be good.",
+  'Start small. Then start again.',
+  "You've done hard things before.",
+  'Your future self is cheering for you.',
+  'Do it badly. It still counts.',
+  'A little every day adds up to a lot.',
+  "Drink some water. You're doing great.",
+  'Showing up is the whole trick.',
+  'Tiny habits, big glow-up.',
+  'Rest is part of the plan too.',
+  'Be the main character of today.',
+  "Two minutes. That's all it takes.",
+  "You're allowed to be proud of small wins.",
+  'Keep the little promises you make to yourself.',
+  "Let's make today a little bit lovely.",
+  'Breathe in, roll your shoulders back, begin.',
+  'Steady beats speedy.',
+  'Every tick helps me grow a little!',
+  'Nothing to prove today. Just something to try.',
+];

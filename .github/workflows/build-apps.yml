@@ -1,0 +1,72 @@
+# Builds ready-to-run Mac and Windows apps.
+# - Publish a release on GitHub: the apps are attached to that release automatically.
+# - Or run it by hand (Actions tab -> Build apps -> Run workflow): the apps appear under that run's "Artifacts".
+name: Build apps
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Package for Apple chip and Intel Macs
+        run: |
+          for arch in arm64 x64; do
+            npx electron-packager . "Pocket Pet" --platform=darwin --arch=$arch --icon=assets/icon --overwrite --out=dist --ignore='^/dist' --ignore='^/test' --ignore='^/\.github'
+            # Not signed with an Apple developer certificate, but an ad-hoc signature lets it open on Apple chip Macs.
+            codesign --force --deep --sign - "dist/Pocket Pet-darwin-$arch/Pocket Pet.app"
+          done
+          ditto -c -k --keepParent "dist/Pocket Pet-darwin-arm64/Pocket Pet.app" "Pocket-Pet-mac-apple-chip.zip"
+          ditto -c -k --keepParent "dist/Pocket Pet-darwin-x64/Pocket Pet.app" "Pocket-Pet-mac-intel.zip"
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" Pocket-Pet-mac-*.zip --clobber
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'release'
+        with:
+          name: Pocket-Pet-mac
+          path: Pocket-Pet-mac-*.zip
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Package for Windows
+        shell: bash
+        run: |
+          npx electron-packager . "Pocket Pet" --platform=win32 --arch=x64 --icon=assets/icon --overwrite --out=dist --ignore='^/dist' --ignore='^/test' --ignore='^/\.github'
+      - name: Zip it
+        shell: pwsh
+        run: Compress-Archive -Path "dist/Pocket Pet-win32-x64" -DestinationPath "Pocket-Pet-windows.zip"
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" Pocket-Pet-windows.zip --clobber
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'release'
+        with:
+          name: Pocket-Pet-windows
+          path: Pocket-Pet-windows.zip

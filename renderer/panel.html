@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Pocket Pet habits</title>
+<style>
+  /* Clean white card, green accent, small uppercase labels, softly tinted tiles. */
+  :root {
+    --card: #ffffff; --ink: #15181e; --muted: #8b919c; --line: #e9ecf0; --soft: #f5f7f9;
+    --accent: #1f9a4b; --accent-soft: #edf8f1; --accent-line: #cdebd8; --accent-ink: #ffffff; --danger: #d64545;
+    --study: #4a86e8; --fitness: #f08a3c; --mind: #9b6ee0; --health: #1fa8b5;
+    --gold: #fff4cc; --gold-ink: #8a5d10;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --card: #1b1e23; --ink: #f3f5f7; --muted: #9aa1ab; --line: #2c3138; --soft: #23272d;
+      --accent: #3cc06a; --accent-soft: #1c2b22; --accent-line: #2a4434; --accent-ink: #08140c; --danger: #f07070;
+      --gold: #3a3018; --gold-ink: #f3cf6a; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: transparent; }
+  body { font: 14px/1.4 -apple-system, "SF Pro Text", system-ui, sans-serif; color: var(--ink);
+    padding: 6px; -webkit-user-select: none; user-select: none; }
+  .card { height: 100%; background: var(--card); border-radius: 24px; border: 1px solid var(--line);
+    display: flex; flex-direction: column; overflow: hidden; }
+  [hidden] { display: none !important; }
+  .kicker { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+  header { padding: 18px 18px 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+    -webkit-app-region: drag; }
+  header button { -webkit-app-region: no-drag; }
+  h1 { margin: 0 0 4px; font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+  .date { color: var(--muted); font-size: 13px; }
+  header .kicker.date { font-size: 10.5px; }
+  .icon-btn { border: 0; background: var(--soft); color: var(--muted); width: 28px; height: 28px; border-radius: 50%;
+    font-size: 16px; line-height: 1; cursor: pointer; flex: none; }
+  .icon-btn:hover { color: var(--ink); }
+
+  .progress { padding: 0 18px 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700;
+    color: var(--accent); font-variant-numeric: tabular-nums; }
+  .bar { flex: 1; height: 8px; background: var(--soft); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .35s ease; }
+
+  /* pet card: one tidy row, tap for details */
+  .pet-card { margin: 0 0 4px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); overflow: hidden; }
+  .pet-card.open { border-color: var(--accent-line); }
+  .pet-head { width: 100%; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; }
+  .pet-head:hover { background: var(--soft); }
+  .thumb { flex: none; width: 52px; height: 52px; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; overflow: hidden; }
+  .thumb svg { width: 64px; height: 60px; flex: none; margin-top: 4px; overflow: visible; }
+  .thumb .shadow { display: none; }
+  .who-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .pet-name { font-size: 16px; font-weight: 800; overflow-wrap: anywhere; line-height: 1.2; }
+  .ready-pill { flex: none; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line);
+    font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+  .name-line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  #petKicker { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chev { flex: none; color: var(--muted); font-size: 18px; transition: transform .2s ease; }
+  .pet-card.open .chev { transform: rotate(90deg); }
+  .shiny-badge { flex: none; background: var(--gold); color: var(--gold-ink); font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; }
+
+  .details { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tile { border-radius: 14px; padding: 10px 11px; background: var(--accent-soft); border: 1px solid var(--accent-line);
+    display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .tile .kicker { color: var(--accent); }
+  .tile b { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .tile .sub { color: var(--muted); font-size: 11.5px; }
+  .tile .bar { flex: none; height: 6px; background: var(--card); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); }
+  .row b { color: var(--ink); font-weight: 700; }
+  .row > span:first-child { min-width: 0; }
+  .look-line:empty { display: none; }
+  .link { border: 0; background: transparent; color: var(--accent); font: inherit; font-weight: 700; font-size: 12px;
+    padding: 3px 6px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+  .link:hover { background: var(--accent-soft); }
+  .link.prompt { background: var(--accent); color: var(--accent-ink); }
+  .actions { display: flex; flex: none; }
+  .name-form { display: flex; gap: 6px; }
+  .name-form input { flex: 1; min-width: 0; font: inherit; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--soft); color: var(--ink); -webkit-user-select: text; user-select: text; }
+  .mini { border: 0; background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700; font-size: 12px;
+    padding: 6px 10px; border-radius: 10px; cursor: pointer; }
+  .mini.plain { background: transparent; color: var(--muted); }
+  .grad { border: 0; background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700; font-size: 13px;
+    padding: 9px 12px; border-radius: 12px; cursor: pointer; }
+  .shiny-note { color: var(--muted); }
+  .style-pick { display: inline-flex; background: var(--soft); border-radius: 10px; padding: 2px; gap: 2px; }
+  .style-pick button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 8px; cursor: pointer; }
+  .style-pick button[aria-checked="true"] { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(20, 24, 30, .12); }
+  .style-pick button[data-style="pixel"] { font-family: ui-monospace, "SF Mono", Consolas, monospace; letter-spacing: .02em; }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--card); box-shadow: 0 0 0 1px var(--line);
+    cursor: pointer; padding: 0; }
+  .swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--accent); }
+
+  .species-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 4px 8px 8px; }
+  .species-grid button { border: 1px solid var(--line); background: var(--soft); border-radius: 14px; padding: 4px 2px 6px; cursor: pointer;
+    font: inherit; font-size: 11px; font-weight: 600; color: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .species-grid button:hover { border-color: var(--accent-line); }
+  .species-grid button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
+  .species-grid svg { width: 66px; height: 62px; overflow: visible; }
+  .species-grid .shadow { opacity: .2; }
+
+  /* first-run welcome: what should the pet call you? */
+  .you-card { margin: 0 0 8px; padding: 12px; border-radius: 18px; background: var(--accent-soft); border: 1px solid var(--accent-line);
+    display: flex; flex-direction: column; gap: 4px; }
+  .you-card .kicker { color: var(--accent); }
+  .you-title { font-size: 16px; font-weight: 800; }
+  .you-sub { color: var(--muted); font-size: 12.5px; margin-bottom: 4px; }
+  .you-card .name-form input { background: var(--card); }
+  .you-error { color: var(--danger); font-size: 12px; }
+  .you-error:empty { display: none; }
+
+  /* habit list */
+  main { flex: 1; overflow-y: auto; padding: 0 14px 12px; }
+  main::-webkit-scrollbar { width: 8px; }
+  main::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; border: 2px solid var(--card); }
+  main::-webkit-scrollbar-track { background: transparent; }
+  .section { padding: 12px 4px 6px; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  li { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); }
+  li:hover { background: var(--soft); }
+  li.done { background: var(--soft); border-color: transparent; }
+  .check { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--cat); background: transparent;
+    cursor: pointer; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 900; padding: 0;
+    transition: background .2s, transform .15s; }
+  .check:active { transform: scale(.88); }
+  li.done .check { background: var(--cat); }
+  li.done .name { color: var(--muted); text-decoration: line-through; }
+  .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--cat); margin: 0 8px; }
+  .text { flex: 1; min-width: 0; }
+  .name { overflow-wrap: anywhere; font-weight: 600; }
+  .meta { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .meta .cat { color: var(--cat); }
+  .later li { opacity: .75; }
+  .edit { border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px;
+    padding: 4px 8px; border-radius: 8px; opacity: 0; }
+  li:hover .edit, .edit:focus-visible { opacity: 1; }
+  .edit:hover { background: var(--line); color: var(--ink); }
+  .empty { color: var(--muted); padding: 18px 8px; text-align: center; border: 1px dashed var(--line); }
+  footer { padding: 12px 14px 14px; border-top: 1px solid var(--line); display: flex; gap: 6px; }
+  footer button { white-space: nowrap; padding-left: 12px !important; padding-right: 12px !important; }
+  .primary { flex: 1; border: 0; background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700;
+    padding: 10px 14px; border-radius: 14px; cursor: pointer; }
+  .ghost { border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-weight: 600;
+    padding: 10px 14px; border-radius: 14px; cursor: pointer; }
+  .ghost:hover { background: var(--soft); }
+  .danger { color: var(--danger); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* editor */
+  form { padding: 4px 18px; display: flex; flex-direction: column; gap: 16px; }
+  label.field { display: flex; flex-direction: column; gap: 6px; }
+  label.field, legend { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  input[type=text] { font: inherit; font-size: 14px; letter-spacing: 0; text-transform: none; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--soft); color: var(--ink); -webkit-user-select: text; user-select: text; }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  legend { padding: 0; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px;
+    border: 1px solid var(--line); cursor: pointer; font-size: 13px; font-weight: 600; }
+  .chip input:checked + span { border-color: var(--cat, var(--accent)); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--cat, var(--accent)); }
+  .chip input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .chip span::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cat, transparent);
+    display: var(--dot, none); }
+  #days { gap: 4px; flex-wrap: nowrap; }
+  .day span { width: 32px; justify-content: center; padding: 6px 0; }
+  .day input:disabled + span { opacity: .4; cursor: default; }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+  .toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .error { color: var(--danger); font-size: 13px; min-height: 18px; margin: 0; }
+  .confirm { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="card">
+  <section id="listView" style="display:flex;flex-direction:column;height:100%">
+    <header>
+      <div><h1>Today</h1><div class="kicker date" id="date"></div></div>
+      <button class="icon-btn" id="close" title="Close (Esc)" aria-label="Close">×</button>
+    </header>
+    <div class="progress"><div class="bar"><i id="fill"></i></div><span id="count"></span></div>
+    <main>
+      <form class="you-card" id="youCard" hidden autocomplete="off">
+        <span class="kicker">Welcome</span>
+        <b class="you-title" id="youTitle">What should your pet call you?</b>
+        <span class="you-sub" id="youSub">It uses your name when it says good morning.</span>
+        <div class="name-form">
+          <input type="text" id="youName" maxlength="24" placeholder="Your name" aria-label="Your name">
+          <button type="submit" class="mini">Save</button>
+          <button type="button" id="youCancel" class="mini plain" hidden>Cancel</button>
+        </div>
+        <span class="you-error" id="youError" role="alert"></span>
+      </form>
+      <div class="pet-card" id="growth">
+        <button type="button" class="pet-head" id="petToggle" aria-expanded="false" aria-controls="petDetails" title="Show pet details">
+          <span class="thumb" id="petThumb"></span>
+          <span class="who-text"><span class="kicker" id="petKicker"></span><span class="name-line"><span class="pet-name" id="growthLabel"></span><span id="readyPill" class="ready-pill" hidden>Ready to graduate</span></span></span>
+          <span id="shinyBadge" class="shiny-badge" hidden>★ Shiny</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </button>
+        <div class="details" id="petDetails" hidden>
+          <div class="tiles">
+            <div class="tile"><span class="kicker">Stage</span><b id="stageText"></b><div class="bar"><i id="growthFill"></i></div><span class="sub" id="growthNext"></span></div>
+            <div class="tile"><span class="kicker">Mood</span><b id="moodText"></b><span class="sub" id="lookLine"></span></div>
+          </div>
+          <button type="button" id="gradBtn" class="grad" hidden>Hold the graduation ceremony</button>
+          <div class="row"><span>It calls you: <b id="youText"></b></span><button type="button" id="youBtn" class="link">Change</button></div>
+        <div class="row"><span>Name: <b id="nameText"></b></span><button type="button" id="nameBtn" class="link">Rename</button></div>
+          <form id="nameForm" class="name-form" hidden autocomplete="off">
+            <input type="text" id="petName" maxlength="16" placeholder="e.g. Yumi" aria-label="Pet name">
+            <button type="submit" class="mini">Save</button>
+            <button type="button" id="nameCancel" class="mini plain">Cancel</button>
+          </form>
+          <div class="row"><span id="speciesText"></span>
+            <span class="actions"><button type="button" id="speciesBtn" class="link">Choose</button><button type="button" id="surpriseBtn" class="link" title="Switch to a random creature">Randomise</button></span></div>
+          <div class="row"><span>Style</span>
+          <span class="style-pick" role="radiogroup" aria-label="Art style">
+            <button type="button" role="radio" data-style="pixel">Pixel</button><button type="button" role="radio" data-style="soft">Soft</button>
+          </span></div>
+        <div class="swatches" id="swatches" role="radiogroup" aria-label="Colour"></div>
+          <div id="shinyNote" class="shiny-note" hidden>Colour: always gold. Shinies can't be recoloured.</div>
+        </div>
+      </div>
+
+      <div class="section kicker" id="dueHead">To do today</div>
+      <ul id="dueList"></ul>
+      <div id="laterWrap"><div class="section kicker">Not today</div><ul id="laterList" class="later"></ul></div>
+    </main>
+    <footer><button class="primary" id="addBtn">+ Add a habit</button><button class="ghost" id="historyBtn">History</button><button class="ghost" id="gardenBtn" title="See your graduated pets">Graduated</button></footer>
+  </section>
+
+  <section id="speciesView" style="display:none;flex-direction:column;height:100%">
+    <header>
+      <div><h1>Choose a creature</h1><div class="date" id="speciesHint">You can change it any time until it graduates.</div></div>
+      <button class="icon-btn" id="speciesClose" title="Close (Esc)" aria-label="Close">×</button>
+    </header>
+    <main><div class="species-grid" id="speciesGrid" role="radiogroup" aria-label="Species"></div></main>
+    <footer>
+      <button class="ghost" id="speciesRandom" type="button">Randomise</button>
+      <button class="primary" id="speciesDone" type="button">Done</button>
+    </footer>
+  </section>
+
+  <section id="editView" style="display:none;flex-direction:column;height:100%">
+    <header>
+      <div><h1 id="editTitle">New habit</h1><div class="date">Keep it tiny: two minutes or less.</div></div>
+      <button class="icon-btn" id="editClose" title="Cancel (Esc)" aria-label="Cancel">×</button>
+    </header>
+    <main>
+      <form id="form" autocomplete="off">
+        <label class="field">Habit
+          <input type="text" id="name" maxlength="60" placeholder="e.g. Floss one tooth">
+        </label>
+        <fieldset>
+          <legend>Category</legend>
+          <div class="chips" id="cats"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Days</legend>
+          <label class="toggle"><input type="checkbox" id="everyDay" checked> Every day</label>
+          <div class="chips" id="days"></div>
+        </fieldset>
+        <p class="error" id="error" role="alert"></p>
+      </form>
+    </main>
+    <footer id="editFooter">
+      <button class="ghost danger" id="deleteBtn" type="button">Delete</button>
+      <button class="primary" id="saveBtn" type="submit" form="form">Save</button>
+    </footer>
+  </section>
+</div>
+<script src="pet-art.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>
