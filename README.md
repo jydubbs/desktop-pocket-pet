@@ -1,9 +1,8 @@
 # Pocket Pet
 
-A little blob that lives on your desktop (Mac or Windows) and keeps your micro-habits.
-Slices done: **1** (floating pet and habit list), **2** (greetings, nudges and nap), **3** (it grows), **4** (it evolves), **5** (graduation and the café), **6** (more species) and **7** (history).
+A little pet that lives on your desktop (Mac or Windows) and keeps track of your micro habits.
 
-## Just want to use it? Download the app
+## Want to use it? Download the app
 
 Go to the **Releases** section of this page (on the right) and download the file for your computer:
 
@@ -11,14 +10,14 @@ Go to the **Releases** section of this page (on the right) and download the file
 - **Older Intel Mac:** `Pocket-Pet-mac-intel.zip`
 - **Windows:** `Pocket-Pet-windows.zip`
 
-The app isn't signed by Apple or Microsoft, so the first time you open it your computer will warn you:
+The app isn't signed by Apple or Microsoft, so the first time you open it your computer might warn you:
 
 - **Mac:** unzip it and drag **Pocket Pet** into Applications. Open it; when macOS says it can't be verified, click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 - **Windows:** unzip it (right-click → **Extract All**), keep the folder somewhere like Documents, and double-click **Pocket Pet.exe**. If you see "Windows protected your PC", click **More info → Run anyway**.
 
 After that it opens normally and starts by itself when you log in.
 
-The steps below are for running it from the code instead.
+The steps below are for running it from using code instead.
 
 ## First-time setup on a Mac (about 5 minutes)
 
@@ -61,8 +60,8 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
 | Do this | What happens |
 |---|---|
 | Click the pet | Opens or closes today's habit list |
-| Double-click the pet | Pokes it (it giggles) |
-| Wiggle the mouse back and forth over it | Strokes it (it purrs and makes hearts) |
+| Double-click the pet | Pokes it (it giggles and makes hearts) |
+| Wiggle the mouse back and forth over it | Strokes it (makes hearts) |
 | Drag the pet | Moves it anywhere; it remembers the spot |
 | Right-click the pet | Nap, show habits, say hi, or quit |
 | Click a circle | Ticks a habit off (click again to undo) |
@@ -77,15 +76,15 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
 | Menu, **Change your name…** | Changes the name your pet calls you (also under **It calls you** in the pet's details) |
 | Menu, **Add starter habits** | Adds any starter-pack habits you don't already have |
 | **Graduate** button (habit list, once it's an adult) | Holds the graduation ceremony |
-| **Graduated** button (habit list) or the menu | Shows every pet you've raised in its own spot |
+| **Graduated** button (habit list) or the menu | Shows every pet you've raised hanging out in the cafe, having a picnic, or chilling in space |
 | **History** button (habit list) or menu, **History** | Calendar, streaks and a journal for every pet |
 
 - At the top of the habit list your pet shows as one tidy row (picture, stage, species and name). Tap it to open its details: stage and XP, mood and look, the graduate button, name, species and colour. Tap again to fold it away; it remembers which way you left it.
 - The badge above the pet shows how many habits are left today.
 - Every so often your pet does a few little hops left or right, then settles. It always stays close to where you put it, and keeps still while your mouse is over it, while the habit list is open, while it's talking or napping.
 - Habits set to other days appear under **Not today**.
-- A new day starts at **4am**, so ticking things off after midnight still counts for the day you were living.
-- It follows your Mac's light or dark mode.
+- A new day starts at **4am**, so ticking things off after midnight still counts for the day.
+- The graduated cafe theme follows Mac's light or dark mode.
 
 ### How it grows
 
@@ -100,13 +99,13 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
 
 ### Style
 
-- Pets are drawn as **pixel art** by default: chunky pixels, a dark pixel outline and a small colour palette, like a handheld game. They still bounce, blink, eat and sparkle.
-- Prefer the smooth look? Open the pet's details in the habit list and switch **Style** from **Pixel** to **Soft**. It changes every pet everywhere (desktop, visitors, hangout, History) straight away, and you can switch back any time.
+- Pets are drawn as **pixel art** by default: chunky pixels, a dark pixel outline and a small colour palette, like a retro handheld game. They bounce, blink, eat and sparkle.
+- If you prefer the smooth look, open the pet's details in the habit list and switch **Style** from **Pixel** to **Soft**. It changes every pet everywhere (desktop, visitors, hangout, History) straight away, and you can switch back any time.
 
 ### Species
 
 - **Choose your creature** with **Choose** (or **Change**) on the Species row of the habit list: a grid of all 16, drawn in your pet's colour. **Randomise** switches to a random different one. You can change it any time until it graduates.
-- If you don't choose, a new egg is a **Mystery egg** and hatches into a surprise, one of 16 creatures: **blob, bunny, cat, frog, capybara, dragon, red panda, quokka, sea otter, panda, raccoon, ferret, bear, lamb**, or one of the mythical ones: **phoenix or pegasus**. It tells you what it is when it hatches.
+- If you don't choose, a new egg is a **Mystery egg** and hatches into a surprise, one of 16 creatures: **blob, bunny, cat, frog, capybara, red panda, quokka, sea otter, panda, raccoon, ferret, bear, lamb**, or one of the mythical ones: **dragon, phoenix or pegasus**. It tells you what it is when it hatches.
 - Each species has its own body and grows up visibly:
   - **Cat:** sits upright with a fluffy chest, darker ears, muzzle and tail; the tail gets longer as it grows.
   - **Frog:** chubby with huge eyes on top; the eyes get bigger as it grows.
@@ -127,9 +126,9 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
 - Every species works with every colour and outfit.
 - Pets you already have keep their species.
 
-### Shinies ★
+### Fun mysteries: Shinies ★
 
-- Every egg has a **1 in 4** chance of hatching **shiny**, whether you picked the species or randomised it. The roll happens once, at the moment it hatches.
+- Every egg has a **1 in 4** chance of hatching **shiny**, whether you picked the species or randomised it, similar to Pokemon! The roll happens once, at the moment it hatches.
 - A shiny is solid gold, with a soft shimmer that sweeps across it and little stars twinkling around it. When it hatches you get a golden burst and **"Congratulations! You got a Shiny …!"**
 - Its name gets **"Shiny"** in front of it forever ("Baby Shiny Yumi"), including in the hangout, on the desktop as a visitor, in History and at graduation.
 - Shinies stay gold, so the colour dots are hidden for them. You can still choose its species before it hatches.
@@ -155,7 +154,7 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
   - **Café:** tables and drinks (coffee, smoothie, tea, sparkling water, hot chocolate).
   - **Picnic garden:** gingham blankets under a big tree and bunting, with a book, frisbee, pot of tea, watermelon or cupcake. Fireflies come out in dark mode.
   - **Space station:** little floating planets among the stars, with a telescope, rocket, pocket star, space juice or comet.
-- **Invite to desktop:** up to 2 graduates can come and sit beside your current pet. Now and then one shuffles over to nuzzle your pet (with hearts), or says something and your pet answers. Click a visitor to say hi; its table shows a "Back soon" card. Use **Call back to the café** to return it.
+- **Invite to desktop:** up to 2 graduates can come and sit beside your current growing pet. Now and then one shuffles over to nuzzle your pet (with hearts), or says something and your pet answers. Click a visitor to say hi; its table shows a "Back soon" card. Use **Call back to the café** to return it.
 
 ### History
 
@@ -212,5 +211,7 @@ If that file ever gets damaged, the app keeps the old copy next to it (named `da
 ## For developers
 
 - Run the automatic checks with `npm test`.
-- **Try things out (developers only):** start with `npm run try` instead of `npm start` and the right-click menu gets a **Try things out** item. It previews any stage, mood, look, species, colour or shiny, feeds treats, and plays every animation, the graduation ceremony and an example hangout. Nothing is saved; choose **Back to my real pet** when you're done. Regular users never see it, so growing up stays a surprise.
+- **Try things out:** start with `npm run try` instead of `npm start` and the right-click menu gets a **Try things out** item. It previews any stage, mood, look, species, colour or shiny, feeds treats, and plays every animation, the graduation ceremony and an example hangout. Nothing is saved; choose **Back to my real pet** when you're done. Regular users never see it, so growing up stays a surprise.
 - **Making a release:** on GitHub, go to **Releases → Draft a new release**, create a tag like `v1.0.0`, and click **Publish release**. GitHub then builds the Mac and Windows apps (about 5–10 minutes, see the **Actions** tab) and attaches them to the release. The recipe is in `.github/workflows/build-apps.yml`.
+
+Hope you enjoy growing with your pet!!
