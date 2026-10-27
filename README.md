@@ -79,7 +79,6 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
 | **Graduate** button (habit list, once it's an adult) | Holds the graduation ceremony |
 | **Graduated** button (habit list) or the menu | Shows every pet you've raised in its own spot |
 | **History** button (habit list) or menu, **History** | Calendar, streaks and a journal for every pet |
-| Menu, **Try things out** | Preview any stage, mood, look or badge, feed treats, and play nudges, wanders, visitor nuzzles and chats, or other animations. Nothing is saved; choose **Back to my real pet** when you're done |
 
 - At the top of the habit list your pet shows as one tidy row (picture, stage, species and name). Tap it to open its details: stage and XP, mood and look, the graduate button, name, species and colour. Tap again to fold it away; it remembers which way you left it.
 - The badge above the pet shows how many habits are left today.
@@ -125,7 +124,7 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
   - **Phoenix:** a golden fire bird with a flame crest, fiery wings and a sweeping flame tail.
   - **Pegasus:** a white pony with a pastel mane, feathered wings and lilac hooves.
   - Winged creatures' wings grow at each stage, and the phoenix opens its beak to eat and grin.
-- Every species works with every colour and outfit. Try them all in **Try things out → Species**.
+- Every species works with every colour and outfit.
 - Pets you already have keep their species.
 
 ### Shinies ★
@@ -134,7 +133,6 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
 - A shiny is solid gold, with a soft shimmer that sweeps across it and little stars twinkling around it. When it hatches you get a golden burst and **"Congratulations! You got a Shiny …!"**
 - Its name gets **"Shiny"** in front of it forever ("Baby Shiny Yumi"), including in the hangout, on the desktop as a visitor, in History and at graduation.
 - Shinies stay gold, so the colour dots are hidden for them. You can still choose its species before it hatches.
-- Want to see one? **Try things out → Preview a shiny hatch**, or tick **Shiny** to view any species in gold.
 
 ### Its look
 
@@ -158,7 +156,6 @@ The blob appears in the bottom-right corner, just above the taskbar. Everything 
   - **Picnic garden:** gingham blankets under a big tree and bunting, with a book, frisbee, pot of tea, watermelon or cupcake. Fireflies come out in dark mode.
   - **Space station:** little floating planets among the stars, with a telescope, rocket, pocket star, space juice or comet.
 - **Invite to desktop:** up to 2 graduates can come and sit beside your current pet. Now and then one shuffles over to nuzzle your pet (with hearts), or says something and your pet answers. Click a visitor to say hi; its table shows a "Back soon" card. Use **Call back to the café** to return it.
-- Want to see it now? **Try things out → Preview the graduation ceremony** or **Preview an example café**. Neither saves anything.
 
 ### History
 
@@ -215,4 +212,5 @@ If that file ever gets damaged, the app keeps the old copy next to it (named `da
 ## For developers
 
 - Run the automatic checks with `npm test`.
+- **Try things out (developers only):** start with `npm run try` instead of `npm start` and the right-click menu gets a **Try things out** item. It previews any stage, mood, look, species, colour or shiny, feeds treats, and plays every animation, the graduation ceremony and an example hangout. Nothing is saved; choose **Back to my real pet** when you're done. Regular users never see it, so growing up stays a surprise.
 - **Making a release:** on GitHub, go to **Releases → Draft a new release**, create a tag like `v1.0.0`, and click **Publish release**. GitHub then builds the Mac and Windows apps (about 5–10 minutes, see the **Actions** tab) and attaches them to the release. The recipe is in `.github/workflows/build-apps.yml`.

@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
+    "try": "electron . --try",
     "test": "node --test test/*.test.js",
     "package": "electron-packager . \"Pocket Pet\" --icon=assets/icon --overwrite --out=dist --ignore=^/dist --ignore=^/test"
   },

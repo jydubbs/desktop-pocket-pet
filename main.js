@@ -69,6 +69,8 @@ function pinOnTop(win) {
 }
 
 // ---------- "Try things out": preview any stage, mood or look without saving anything ----------
+// Hidden from users so growing up stays a surprise. Developers can open it with `npm run try`.
+const TRY_MODE = process.argv.includes('--try');
 
 let preview = null;
 const COLOR_LABELS = { natural: 'Natural', pink: 'Pink', peach: 'Peach', mint: 'Mint', sky: 'Sky', lavender: 'Lavender', lemon: 'Lemon', cloud: 'Cloud', cocoa: 'Cocoa' }; // e.g. { stage: 'teen', mood: 'sleepy', look: { main: 'mind', accent: 'study' } }
@@ -683,7 +685,7 @@ function menuTemplate() {
         body: n ? 'Tiny habits for body and mind. Delete any you don\'t want.' : 'Every starter habit is already on your list.', ms: 6000 });
     } },
     { label: store.data.garden.length ? `Open ${place().place} (${store.data.garden.length})` : `Open ${place().place}`, click: () => openGarden(false) },
-    { label: preview ? 'Try things out (previewing)' : 'Try things out', enabled: !napping, submenu: tryMenu() },
+    ...(TRY_MODE ? [{ label: preview ? 'Try things out (previewing)' : 'Try things out', enabled: !napping, submenu: tryMenu() }] : []),
     { type: 'separator' },
     { label: 'Quit Pocket Pet', click: () => app.quit() },
   ];
