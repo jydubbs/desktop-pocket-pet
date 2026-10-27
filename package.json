@@ -9,7 +9,7 @@
     "start": "electron .",
     "try": "electron . --try",
     "test": "node --test test/*.test.js",
-    "package": "electron-packager . \"Pocket Pet\" --icon=assets/icon --overwrite --out=dist --ignore=^/dist --ignore=^/test"
+    "package": "electron-packager . \"Pocket Pet\" --icon=assets/icon --overwrite --out=dist --ignore=^/dist --ignore=^/test --ignore=^/docs"
   },
   "devDependencies": {
     "@electron/packager": "^18.3.6",

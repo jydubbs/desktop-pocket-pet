@@ -2,6 +2,8 @@
 
 A little pet that lives on your desktop (Mac or Windows) and keeps track of your micro habits.
 
+![Pocket Pet in action: ticking off habits, the pet hopping and talking, and the History calendar and pet journal](docs/pocket-pet-demo.gif)
+
 ## Want to use it? Download the app
 
 Go to the **Releases** section of this page (on the right) and download the file for your computer:

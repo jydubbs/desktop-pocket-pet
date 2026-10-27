@@ -25,7 +25,7 @@ jobs:
       - name: Package for Apple chip and Intel Macs
         run: |
           for arch in arm64 x64; do
-            npx electron-packager . "Pocket Pet" --platform=darwin --arch=$arch --icon=assets/icon --overwrite --out=dist --ignore='^/dist' --ignore='^/test' --ignore='^/\.github'
+            npx electron-packager . "Pocket Pet" --platform=darwin --arch=$arch --icon=assets/icon --overwrite --out=dist --ignore='^/dist' --ignore='^/test' --ignore='^/\.github' --ignore='^/docs'
             # Not signed with an Apple developer certificate, but an ad-hoc signature lets it open on Apple chip Macs.
             codesign --force --deep --sign - "dist/Pocket Pet-darwin-$arch/Pocket Pet.app"
           done
@@ -55,7 +55,7 @@ jobs:
       - name: Package for Windows
         shell: bash
         run: |
-          npx electron-packager . "Pocket Pet" --platform=win32 --arch=x64 --icon=assets/icon --overwrite --out=dist --ignore='^/dist' --ignore='^/test' --ignore='^/\.github'
+          npx electron-packager . "Pocket Pet" --platform=win32 --arch=x64 --icon=assets/icon --overwrite --out=dist --ignore='^/dist' --ignore='^/test' --ignore='^/\.github' --ignore='^/docs'
       - name: Zip it
         shell: pwsh
         run: Compress-Archive -Path "dist/Pocket Pet-win32-x64" -DestinationPath "Pocket-Pet-windows.zip"
