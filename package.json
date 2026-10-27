@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "try": "electron . --try",
-    "test": "node --test test/*.test.js",
+    "test": "node --test",
     "package": "electron-packager . \"Pocket Pet\" --icon=assets/icon --overwrite --out=dist --ignore=^/dist --ignore=^/test --ignore=^/docs"
   },
   "devDependencies": {
