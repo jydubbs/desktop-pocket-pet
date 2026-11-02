@@ -171,6 +171,32 @@ function clampToScreen(x, y, w, h) {
 
 // ---------- windows ----------
 
+// ---------- keeping the pet's windows alive ----------
+// Cmd + W (or Ctrl + W) on the pet or the habit list must never close them for good: they hide instead,
+// a crashed window reloads, and anything that does go missing is rebuilt the next time it's needed.
+let quitting = false;
+const alive = (w) => Boolean(w && !w.isDestroyed());
+function keepAlive(win, onCloseAttempt) {
+  win.on('close', (e) => {
+    if (quitting || win.allowClose) return;
+    e.preventDefault();
+    if (onCloseAttempt) onCloseAttempt();
+  });
+  win.webContents.on('render-process-gone', () => {
+    if (!quitting && alive(win)) win.webContents.reload();
+  });
+}
+function ensureWindows() {
+  if (quitting) return false;
+  if (!alive(petWin)) {
+    createPet();
+    if (napping) petWin.hide();
+  }
+  if (!alive(panelWin)) createPanel();
+  if (!alive(bubbleWin)) createBubble();
+  return true;
+}
+
 function createPet() {
   const wa = screen.getPrimaryDisplay().workArea;
   const saved = store.data.petPosition;
@@ -179,12 +205,14 @@ function createPet() {
     : { x: wa.x + wa.width - PET_W - 40, y: wa.y + wa.height - PET_H - 20 };
   petWin = new BrowserWindow({ ...floating, width: PET_W, height: PET_H, x: start.x, y: start.y, hasShadow: false, webPreferences });
   pinOnTop(petWin);
+  keepAlive(petWin);
   petWin.loadFile(path.join(__dirname, 'renderer', 'pet.html'));
 }
 
 function createPanel() {
   panelWin = new BrowserWindow({ ...floating, width: PANEL_W, height: PANEL_H, show: false, hasShadow: true, webPreferences });
   pinOnTop(panelWin);
+  keepAlive(panelWin, () => panelWin.hide());
   panelWin.loadFile(path.join(__dirname, 'renderer', 'panel.html'));
 }
 
@@ -196,6 +224,7 @@ function createBubble() {
   });
   pinOnTop(bubbleWin);
   bubbleWin.setIgnoreMouseEvents(true); // clicks pass straight through the bubble
+  keepAlive(bubbleWin, () => bubbleWin.hide());
   bubbleWin.loadFile(path.join(__dirname, 'renderer', 'bubble.html'));
 }
 
@@ -217,6 +246,7 @@ function askName() {
 }
 
 function showPanel() {
+  if (!ensureWindows()) return;
   hideBubble();
   placePanel();
   panelWin.show();
@@ -225,6 +255,7 @@ function showPanel() {
 }
 
 function togglePanel() {
+  if (!ensureWindows()) return;
   if (panelWin.isVisible()) panelWin.hide();
   else showPanel();
 }
@@ -246,7 +277,7 @@ function placeBubble(height) {
 }
 
 function say({ title = '', body = '', ms = NUDGE_MS }) {
-  if (napping || !bubbleWin) return;
+  if (napping || !ensureWindows()) return;
   clearTimeout(bubbleTimer);
   clearTimeout(bubbleHideTimer); // cancel a fade-out still in progress
   placeBubble(120); // decide the tail side before measuring
@@ -256,12 +287,12 @@ function say({ title = '', body = '', ms = NUDGE_MS }) {
 
 function hideBubble() {
   clearTimeout(bubbleTimer);
-  if (bubbleWin && bubbleWin.isVisible()) {
+  if (alive(bubbleWin) && bubbleWin.isVisible()) {
     bubbleWin.webContents.send('bubble:show', { hide: true });
     clearTimeout(bubbleHideTimer);
-    bubbleHideTimer = setTimeout(() => bubbleWin.hide(), 250);
+    bubbleHideTimer = setTimeout(() => alive(bubbleWin) && bubbleWin.hide(), 250);
   }
-  petWin.webContents.send('pet:talking', false);
+  if (alive(petWin)) petWin.webContents.send('pet:talking', false);
 }
 
 // ---------- what the pet says ----------
@@ -274,6 +305,7 @@ function greet() {
 }
 
 function maybeGreet() {
+  if (!ensureWindows()) return;
   if (!napping && talk.shouldGreet(store.data.talk.lastGreetingAt)) greet();
 }
 
@@ -292,6 +324,7 @@ function checkLook() {
 }
 
 function checkNudge(now = new Date()) {
+  if (!ensureWindows()) return;
   if (napping || panelWin.isVisible() || Date.now() < quietUntil) return;
   const slot = talk.openNudgeSlot(now, store.nudgesUsedToday(now));
   if (!slot) return;
@@ -332,7 +365,7 @@ function showNapInTaskbar() {
   napWin.on('restore', wakeUp);
   napWin.on('focus', () => { if (Date.now() - born > 800) wakeUp(); });
   napWin.on('show', () => { if (napWin && !napWin.isMinimized()) wakeUp(); });
-  napWin.on('closed', () => { napWin = null; wakeUp(); });
+  napWin.on('closed', () => { napWin = null; if (!quitting) wakeUp(); });
 }
 
 function showNapInDock() {
@@ -358,6 +391,7 @@ function hideFromDock() {
 }
 
 function nap() {
+  if (!ensureWindows()) return;
   napping = true;
   hideBubble();
   panelWin.hide();
@@ -370,6 +404,7 @@ function nap() {
 function wake() {
   if (!napping) return;
   napping = false;
+  if (!ensureWindows()) return;
   hideFromDock();
   petWin.showInactive();
   pinOnTop(petWin);
@@ -498,14 +533,15 @@ function syncVisitors() {
   const want = napping ? [] : store.data.visitors;
   for (const [id, w] of visitorWins) {
     if (!want.includes(id)) {
-      if (!w.isDestroyed()) w.close();
+      if (!w.isDestroyed()) { w.allowClose = true; w.close(); }
       visitorWins.delete(id);
     }
   }
   for (const id of want) {
-    if (visitorWins.has(id)) continue;
+    if (alive(visitorWins.get(id))) continue;
     const w = new BrowserWindow({ ...floating, width: VIS_W, height: VIS_H, show: false, hasShadow: false, focusable: false, webPreferences });
     pinOnTop(w);
+    keepAlive(w);
     w.loadFile(path.join(__dirname, 'renderer', 'visitor.html'), { query: { id } });
     w.once('ready-to-show', () => w.showInactive());
     visitorWins.set(id, w);
@@ -515,6 +551,7 @@ function syncVisitors() {
 
 // Visitors sit beside the pet: to its left when there's room, otherwise to its right.
 function placeVisitors() {
+  if (!alive(petWin)) return;
   if (!petWin) return;
   const [px, py] = petWin.getPosition();
   const wa = screen.getDisplayNearestPoint({ x: px, y: py }).workArea;
@@ -909,6 +946,7 @@ if (!app.requestSingleInstanceLock()) {
     if (napping) wake();
   });
 
+  app.on('before-quit', () => { quitting = true; });
   app.on('will-quit', () => globalShortcut.unregisterAll());
   app.on('window-all-closed', () => app.quit());
 }
