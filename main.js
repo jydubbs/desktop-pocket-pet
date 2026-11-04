@@ -64,8 +64,19 @@ const floating = {
 };
 
 function pinOnTop(win) {
+  if (!win || win.isDestroyed()) return;
   win.setAlwaysOnTop(true, 'floating');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+}
+
+// macOS can forget "show on every desktop" for a window that has been hidden, or after the Dock icon
+// comes and goes (napping). Re-apply it before showing anything, so the habit list opens on the desktop
+// you're looking at instead of sending you back to the one the app started on.
+function pinAll() {
+  pinOnTop(petWin);
+  pinOnTop(panelWin);
+  pinOnTop(bubbleWin);
+  for (const w of visitorWins.values()) pinOnTop(w);
 }
 
 // ---------- "Try things out": preview any stage, mood or look without saving anything ----------
@@ -248,9 +259,10 @@ function askName() {
 function showPanel() {
   if (!ensureWindows()) return;
   hideBubble();
+  pinOnTop(panelWin);
   placePanel();
-  panelWin.show();
-  panelWin.focus();
+  panelWin.showInactive(); // appear here first, without asking macOS to switch desktops
+  panelWin.focus();        // then take the keyboard so you can type
   broadcast();
 }
 
@@ -406,13 +418,15 @@ function wake() {
   napping = false;
   if (!ensureWindows()) return;
   hideFromDock();
+  pinAll();
   petWin.showInactive();
-  pinOnTop(petWin);
+  pinAll();
   syncVisitors();
   refreshTray();
   // Give macOS a moment to finish removing the Dock icon before the bubble appears.
   setTimeout(() => {
     if (napping) return;
+    pinAll(); // and once more after the Dock icon is gone, which can reset it
     if (talk.shouldGreet(store.data.talk.lastGreetingAt)) greet();
     else say({ body: "Yawn… I'm back!", ms: 5000 });
   }, 600);
